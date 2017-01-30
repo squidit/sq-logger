@@ -28,24 +28,24 @@ function addProductionTransport () {
 }
 
 function addDevelopmentTransport () {
-  winston.add(new winston.transports.File({ filename: path.join(__dirname, 'all-logs.log') }))
-  winston.handleExceptions(new winston.transports.File({ filename: path.join(__dirname, 'exceptions.log') }))
+  winston.add(winston.transports.File, { filename: path.join(__dirname, 'all-logs.log') })
+  winston.handleExceptions(winston.transports.File, { filename: path.join(__dirname, 'exceptions.log') })
 }
 
 function addStageTransport () {
   require('winston-daily-rotate-file')
-  winston.add(new winston.transports.DailyRotateFile({
+  winston.add(winston.transports.DailyRotateFile, {
     filename: './all-logs.log',
     datePattern: 'yyyy-MM-dd.',
     prepend: true,
     level: 'debug'
-  }))
-  winston.handleExceptions(new winston.transports.DailyRotateFile({
+  })
+  winston.handleExceptions(winston.transports.DailyRotateFile, {
     filename: './exceptions.log',
     datePattern: 'yyyy-MM-dd.',
     prepend: true,
     level: 'debug'
-  }))
+  })
 }
 
 function dummyAdd () { return }
