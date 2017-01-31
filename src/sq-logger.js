@@ -1,4 +1,3 @@
-require('pkginfo')(module, 'version', 'name')
 const boom = require('boom')
 const concat = require('lodash/concat')
 const get = require('lodash/get')
@@ -7,6 +6,7 @@ const isEqual = require('lodash/isEqual')
 const isEmpty = require('lodash/isEmpty')
 const map = require('lodash/map')
 const path = require('path')
+const readJson = require('read-package-json')
 const some = require('lodash/some')
 const toLower = require('lodash/toLower')
 const winston = require('winston')
@@ -68,6 +68,16 @@ function dummyAdd () { return }
   }
 })()
 
+let pkg = {}
+
+readJson(path.join(process.cwd(), 'package.json'), console.error, false, (error, data) => {
+  if (error) {
+    console.error(error)
+  } else {
+    pkg = data
+  }
+})
+
 let expectedErrors = []
 
 function mapErrors (errorsClasses) {
@@ -82,8 +92,8 @@ function register (errorsClasses) {
 
 function createErrorLogObj (request, error, boomError) {
   return {
-    api: get(module, 'exports.name'),
-    version: get(module, 'exports.version'),
+    api: get(pkg, 'name'),
+    version: get(pkg, 'version'),
     channel: get(request, 'headers.app_id', get(request, 'headers.x-sq-channel', '')),
     user_id: get(request, 'auth.credentials.sub', 'anonymous'),
     email: get(request, 'auth.credentials.email'),
@@ -103,8 +113,8 @@ function createErrorLogObj (request, error, boomError) {
 
 function createInfoLogObj (request, statusCode) {
   return {
-    api: get(module, 'exports.name'),
-    version: get(module, 'exports.version'),
+    api: get(pkg, 'name'),
+    version: get(pkg, 'version'),
     channel: get(request, 'headers.app_id', get(request, 'headers.x-sq-channel', '')),
     user_id: get(request, 'auth.credentials.sub', 'anonymous'),
     email: get(request, 'auth.credentials.email'),
@@ -115,7 +125,7 @@ function createInfoLogObj (request, statusCode) {
     remote_address: get(request, 'info.remoteAddress'),
     request_id: get(request, 'id'),
     status_code: statusCode,
-    uid: get(request, 'headers.x-sq-uid')
+    uid: get(request, 'headers.x-sq-uid', get(request, 'id'))
   }
 }
 
@@ -145,6 +155,9 @@ function replyInfo (request, reply, statusCode = 200) {
   return (data) => reply(logInfo(request, data, statusCode)).code(statusCode)
 }
 
+function replyEmpty (request, reply, statusCode = 200) {
+  return () => reply(logInfo(request, null, statusCode)).code(statusCode)
+}
 module.exports = winston
 module.exports.createErrorLogObj = createErrorLogObj
 module.exports.createInfoLogObj = createInfoLogObj
@@ -157,6 +170,8 @@ module.exports.logger = winston
 module.exports.register = register
 module.exports.replyError = replyError
 module.exports.reply = replyInfo
+module.exports.replyEmpty = replyEmpty
+module.exports.sqReplyEmpty = replyEmpty
 module.exports.sqReply = replyInfo
 module.exports.sqReplyError = replyError
 module.exports.wrapBoomError = wrapError
