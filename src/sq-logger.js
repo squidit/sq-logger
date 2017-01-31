@@ -122,22 +122,22 @@ function wrapError (request, error) {
 function logError (request, error) {
   const wrappedError = wrapError(request, error)
   const level = isEqual(wrappedError.statusCode, 500) ? 'error' : 'warn'
-  winston.log(level, JSON.parse(this.createErrorLogObj(request, error, wrappedError)))
+  winston.log(level, JSON.stringify(createErrorLogObj(request, error, wrappedError)))
   return wrappedError
 }
 
 function replyError (request, reply) {
-  return (error) => reply(this.logError(request, error))
+  return (error) => reply(logError(request, error))
 }
 
 function logInfo (request, data, statusCode) {
-  const logObj = this.createInfoLogObj(request, statusCode)
-  winston.log('info', JSON.parse(logObj))
+  const logObj = createInfoLogObj(request, statusCode)
+  winston.log('info', JSON.stringify(logObj))
   return data
 }
 
 function replyInfo (request, reply, statusCode = 200) {
-  return (data) => reply(this.logInfo(request, data, statusCode)).code(statusCode)
+  return (data) => reply(logInfo(request, data, statusCode)).code(statusCode)
 }
 
 module.exports = winston
@@ -153,4 +153,5 @@ module.exports.register = register
 module.exports.replyError = replyError
 module.exports.reply = replyInfo
 module.exports.sqReply = replyInfo
+module.exports.sqReplyError = replyError
 module.exports.wrapBoomError = wrapError
