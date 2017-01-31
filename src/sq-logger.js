@@ -48,6 +48,10 @@ function addStageTransport () {
   })
 }
 
+function addTestTransport () {
+  winston.remove(winston.transports.Console)
+}
+
 function dummyAdd () { return }
 
 (() => {
@@ -55,6 +59,7 @@ function dummyAdd () { return }
     isEqual(env, 'production') ? addProductionTransport() : dummyAdd()
     isEqual(env, 'development') ? addDevelopmentTransport() : dummyAdd()
     isEqual(env, 'stage') ? addStageTransport() : dummyAdd()
+    isEqual(env, 'test') ? addTestTransport() : dummyAdd()
 
     return winston
   } catch (error) {
