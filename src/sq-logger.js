@@ -4,6 +4,8 @@ const get = require('lodash/get')
 const isArray = require('lodash/isArray')
 const isEqual = require('lodash/isEqual')
 const isEmpty = require('lodash/isEmpty')
+const isError = require('lodash/isError')
+const gt = require('lodash/gt')
 const map = require('lodash/map')
 const path = require('path')
 const readJson = require('read-package-json')
@@ -133,7 +135,10 @@ function createInfoLogObj (request, statusCode) {
 
 function wrapError (request, error) {
   const isRegisteredError = some(expectedErrors, expectedError => isEqual(expectedError, toLower(get(error, 'name', ''))))
-  return isRegisteredError ? boom.badRequest(error) : boom.wrap(error)
+  const errorToCreate = (isError(error) ? error : new Error(get(error, 'message')))
+  return isRegisteredError
+    ? boom.badRequest(errorToCreate)
+    : boom.wrap(errorToCreate, (gt(error.statusCode, 300) ? error.statusCode : 500))
 };
 
 function logError (request, error) {
