@@ -130,7 +130,7 @@ function createInfoLogObj (request, statusCode) {
 }
 
 function wrapError (request, error) {
-  const isRegisteredError = some(expectedErrors, toLower(get(error, 'name', '')))
+  const isRegisteredError = some(expectedErrors, expectedError => isEqual(expectedError, toLower(get(error, 'name', ''))))
   return isRegisteredError ? boom.badRequest(error) : boom.wrap(error)
 };
 
