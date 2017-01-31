@@ -30,6 +30,7 @@ function addProductionTransport () {
 }
 
 function addDevelopmentTransport () {
+  winston.remove(winston.transports.Console)
   winston.add(winston.transports.File, { filename: path.join(process.cwd(), 'all-logs.log') })
   winston.handleExceptions(winston.transports.File, { filename: path.join(process.cwd(), 'exceptions.log') })
 }
