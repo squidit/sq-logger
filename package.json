@@ -1,6 +1,6 @@
 {
   "name": "sq-logger",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Logger padrão da Squid.",
   "main": "index.js",
   "scripts": {

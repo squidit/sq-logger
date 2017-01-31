@@ -107,7 +107,8 @@ function createErrorLogObj (request, error, boomError) {
     remote_address: get(request, 'info.remoteAddress'),
     request_id: get(request, 'id'),
     status_code: get(boomError, 'statusCode'),
-    uid: get(request, 'headers.x-sq-uid')
+    uid: get(request, 'headers.x-sq-uid'),
+    user_agent: get(request, 'headers.user-agent')
   }
 }
 
@@ -125,7 +126,8 @@ function createInfoLogObj (request, statusCode) {
     remote_address: get(request, 'info.remoteAddress'),
     request_id: get(request, 'id'),
     status_code: statusCode,
-    uid: get(request, 'headers.x-sq-uid', get(request, 'id'))
+    uid: get(request, 'headers.x-sq-uid', get(request, 'id')),
+    user_agent: get(request, 'headers.user-agent')
   }
 }
 
