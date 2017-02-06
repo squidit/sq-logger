@@ -101,7 +101,7 @@ function createErrorLogObj (request, error, boomError) {
     user_id: get(request, 'auth.credentials.sub', 'anonymous'),
     email: get(request, 'auth.credentials.email'),
     error_message: get(error, 'message'),
-    error,
+    error: JSON.stringify(error),
     method: get(request, 'route.method'),
     path: get(request, 'url.pathname'),
     query_string: get(request, 'query'),
