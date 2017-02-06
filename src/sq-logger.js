@@ -11,6 +11,7 @@ const path = require('path')
 const readJson = require('read-package-json')
 const some = require('lodash/some')
 const toLower = require('lodash/toLower')
+require('le_node')
 const winston = require('winston')
 
 const {
@@ -23,8 +24,8 @@ function addProductionTransport () {
     console.info('LOGGER_TOKEN not informed and is production environment, loggin in daily file.')
     addStageTransport()
   } else {
-    require('le_node')
     winston.add(winston.transports.Logentries, { token })
+    winston.add(winston.transports.Console)
     winston.handleExceptions(winston.transports.Logentries)
   }
 }
