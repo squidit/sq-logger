@@ -123,7 +123,7 @@ function createErrorLogObj (request, error, boomError) {
     payload: get(request, 'payload'),
     remote_address: get(request, 'info.remoteAddress'),
     request_id: get(request, 'id'),
-    status_code: get(boomError, 'statusCode'),
+    status_code: get(boomError, 'output.statusCode'),
     uid: get(request, 'headers.x-sq-uid', get(request, 'id')),
     user_agent: get(request, 'headers.user-agent'),
     stack: get(error, 'stack')
