@@ -70,3 +70,8 @@ function myHandler (request, reply) {
     .catch(sqReplyError(request, reply))
 }
 ```
+
+## Configuração
+Por padrão o level de log é *debug*, caso queira alterar, exporte no ambiente a variável `LOGGER_LEVEL` com o valor desejado.
+
+Para que os logs sejam transportados para o LogEntries em produção é necessário ter exportado no ambiente o valor para `LOGGER_TOKEN`. Caso esteja em produção mas não tenha o valor para o token, os transportes de stage são configurados.

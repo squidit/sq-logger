@@ -4,36 +4,48 @@ const get = require('lodash/get')
 const isArray = require('lodash/isArray')
 const isEqual = require('lodash/isEqual')
 const isEmpty = require('lodash/isEmpty')
-const isError = require('lodash/isError')
 const gt = require('lodash/gt')
 const map = require('lodash/map')
 const path = require('path')
 const readJson = require('read-package-json')
 const some = require('lodash/some')
 const toLower = require('lodash/toLower')
-require('le_node')
 const winston = require('winston')
 
 const {
   LOGGER_TOKEN: token,
-  NODE_ENV: env
+  NODE_ENV: env,
+  LOGGER_LEVEL: loggerLevel
 } = process.env
+
+function getLoggerLevel () {
+  return isEmpty(loggerLevel) ? 'debug' : loggerLevel
+}
 
 function addProductionTransport () {
   if (isEmpty(token)) {
     console.info('LOGGER_TOKEN not informed and is production environment, loggin in daily file.')
     addStageTransport()
   } else {
-    winston.add(winston.transports.Logentries, { token })
-    winston.add(winston.transports.Console)
+    require('le_node')
+    winston.remove(winston.transports.Console)
+    winston.add(winston.transports.Logentries, {
+      token,
+      level: getLoggerLevel()
+    })
     winston.handleExceptions(winston.transports.Logentries)
   }
 }
 
 function addDevelopmentTransport () {
   winston.remove(winston.transports.Console)
-  winston.add(winston.transports.File, { filename: path.join(process.cwd(), 'all-logs.log') })
-  winston.handleExceptions(winston.transports.File, { filename: path.join(process.cwd(), 'exceptions.log') })
+  winston.add(winston.transports.File, {
+    filename: path.join(process.cwd(), 'all-logs.log'),
+    level: getLoggerLevel()
+  })
+  winston.handleExceptions(winston.transports.File, {
+    filename: path.join(process.cwd(), 'exceptions.log')
+  })
 }
 
 function addStageTransport () {
@@ -42,13 +54,13 @@ function addStageTransport () {
     filename: path.join(process.cwd(), 'all-logs.log'),
     datePattern: 'yyyy-MM-dd.',
     prepend: true,
-    level: 'debug'
+    level: getLoggerLevel()
   })
   winston.handleExceptions(winston.transports.DailyRotateFile, {
     filename: path.join(process.cwd(), 'exceptions.log'),
     datePattern: 'yyyy-MM-dd.',
     prepend: true,
-    level: 'debug'
+    level: getLoggerLevel()
   })
 }
 
@@ -56,7 +68,9 @@ function addTestTransport () {
   winston.remove(winston.transports.Console)
 }
 
-function dummyAdd () { return }
+function dummyAdd () {
+  return
+}
 
 (() => {
   try {
@@ -90,8 +104,8 @@ function mapErrors (errorsClasses) {
 }
 
 function register (errorsClasses) {
-  return (isArray(errorsClasses) && !isEmpty(errorsClasses)) ? mapErrors(errorsClasses)
-    : null
+  return (isArray(errorsClasses) && !isEmpty(errorsClasses)) ? mapErrors(errorsClasses) :
+    null
 }
 
 function createErrorLogObj (request, error, boomError) {
@@ -102,7 +116,6 @@ function createErrorLogObj (request, error, boomError) {
     user_id: get(request, 'auth.credentials.sub', 'anonymous'),
     email: get(request, 'auth.credentials.email'),
     error_message: get(error, 'message'),
-    error: JSON.stringify(error),
     method: get(request, 'route.method'),
     path: get(request, 'url.pathname'),
     query_string: get(request, 'query'),
@@ -111,8 +124,9 @@ function createErrorLogObj (request, error, boomError) {
     remote_address: get(request, 'info.remoteAddress'),
     request_id: get(request, 'id'),
     status_code: get(boomError, 'statusCode'),
-    uid: get(request, 'headers.x-sq-uid'),
-    user_agent: get(request, 'headers.user-agent')
+    uid: get(request, 'headers.x-sq-uid', get(request, 'id')),
+    user_agent: get(request, 'headers.user-agent'),
+    stack: get(error, 'stack')
   }
 }
 
@@ -137,7 +151,7 @@ function createInfoLogObj (request, statusCode) {
 
 function wrapError (request, error) {
   const isRegisteredError = some(expectedErrors, expectedError => isEqual(expectedError, toLower(get(error, 'name', ''))))
-  const errorToCreate = (isError(error) ? error : new Error(get(error, 'message')))
+  const errorToCreate = new Error(get(error, 'message'))
   return isRegisteredError
     ? boom.badRequest(errorToCreate)
     : boom.wrap(errorToCreate, (gt(error.statusCode, 300) ? error.statusCode : 500))
@@ -145,8 +159,8 @@ function wrapError (request, error) {
 
 function logError (request, error) {
   const wrappedError = wrapError(request, error)
-  const level = isEqual(wrappedError.statusCode, 500) ? 'error' : 'warn'
-  winston.log(level, JSON.stringify(createErrorLogObj(request, error, wrappedError)))
+  const level = isEqual(get(wrappedError, 'output.statusCode'), 500) ? 'error' : 'warn'
+  winston[level](JSON.stringify(createErrorLogObj(request, error, wrappedError)))
   return wrappedError
 }
 
@@ -156,7 +170,7 @@ function replyError (request, reply) {
 
 function logInfo (request, data, statusCode) {
   const logObj = createInfoLogObj(request, statusCode)
-  winston.log('info', JSON.stringify(logObj))
+  winston.info(JSON.stringify(logObj))
   return data
 }
 
