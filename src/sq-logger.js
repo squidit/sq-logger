@@ -181,6 +181,32 @@ function replyInfo (request, reply, statusCode = 200) {
 function replyEmpty (request, reply, statusCode = 200) {
   return () => reply(logInfo(request, null, statusCode)).code(statusCode)
 }
+
+function logStepError (step, err, data) {
+  const log = Object.assign({}, {
+    project: get(pkg, 'name'),
+    version: get(pkg, 'version'),
+    step,
+    error: {
+      message: get(err, 'message', ''),
+      stack: get(err, 'stack', ''),
+      name: get(err, 'name')
+    }
+  }, data)
+
+  winston.error(JSON.stringify(log))
+}
+
+function logStepInfo (step, status, data) {
+  const log = Object.assign({}, {
+    project: get(pkg, 'name'),
+    version: get(pkg, 'version'),
+    step,
+    status
+  }, data)
+  winston.info(JSON.stringify(log))
+}
+
 module.exports = winston
 module.exports.createErrorLogObj = createErrorLogObj
 module.exports.createInfoLogObj = createInfoLogObj
@@ -189,6 +215,8 @@ module.exports.handleError = replyError
 module.exports.defaultErrorHandler = replyError
 module.exports.logError = logError
 module.exports.logInfo = logInfo
+module.exports.logStepError = logStepError
+module.exports.logStepInfo = logStepInfo
 module.exports.logger = winston
 module.exports.register = register
 module.exports.replyError = replyError
