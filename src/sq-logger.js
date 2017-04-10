@@ -19,7 +19,7 @@ const {
 } = process.env
 
 function getLoggerLevel () {
-  return isEmpty(loggerLevel) ? 'debug' : loggerLevel
+  return isEmpty(loggerLevel) ? 'error' : loggerLevel
 }
 
 function addProductionTransport () {
@@ -75,7 +75,12 @@ function dummyAdd () {
 (() => {
   try {
     isEqual(env, 'production') ? addProductionTransport() : dummyAdd()
-    isEqual(env, 'development') ? addDevelopmentTransport() : dummyAdd()
+    (isEqual(env, 'local') ||
+    isEqual(env, 'develop') ||
+    isEqual(env, 'develop') ||
+    isEqual(env, 'development'))
+      ? addDevelopmentTransport()
+      : dummyAdd()
     isEqual(env, 'stage') ? addStageTransport() : dummyAdd()
     isEqual(env, 'test') ? addTestTransport() : dummyAdd()
 

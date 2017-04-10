@@ -72,6 +72,14 @@ function myHandler (request, reply) {
 ```
 
 ## Configuração
-Por padrão o level de log é *debug*, caso queira alterar, exporte no ambiente a variável `LOGGER_LEVEL` com o valor desejado.
+Por padrão o level de log é *error*, caso queira alterar, exporte no ambiente a variável `LOGGER_LEVEL` com o valor desejado.
+
+Valores possíveis:
+- error
+- warn
+- info
+- verbose
+- debug
+- silly
 
 Para que os logs sejam transportados para o LogEntries em produção é necessário ter exportado no ambiente o valor para `LOGGER_TOKEN`. Caso esteja em produção mas não tenha o valor para o token, os transportes de stage são configurados.
