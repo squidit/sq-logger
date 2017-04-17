@@ -75,10 +75,10 @@ function dummyAdd () {
 (() => {
   try {
     isEqual(env, 'production') ? addProductionTransport() : dummyAdd()
-    (isEqual(env, 'local') ||
+    isEqual(env, 'local') ||
     isEqual(env, 'develop') ||
     isEqual(env, 'develop') ||
-    isEqual(env, 'development'))
+    isEqual(env, 'development')
       ? addDevelopmentTransport()
       : dummyAdd()
     isEqual(env, 'stage') ? addStageTransport() : dummyAdd()
