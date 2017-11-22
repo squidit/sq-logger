@@ -155,7 +155,7 @@ function createInfoLogObj (request, statusCode) {
 }
 
 function wrapError (request, error) {
-  const isRegisteredError = some(expectedErrors, expectedError => isEqual(expectedError, toLower(get(error, 'name', ''))))
+  const isRegisteredError = some(expectedErrors, expectedError => isEqual(expectedError, toLower(error.constructor.name)))
   const errorToCreate = new Error(get(error, 'message'))
   return isRegisteredError
     ? boom.badRequest(errorToCreate)
