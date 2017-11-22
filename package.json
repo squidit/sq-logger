@@ -1,6 +1,6 @@
 {
   "name": "sq-logger",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Logger padrão da Squid.",
   "main": "index.js",
   "scripts": {
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@gitlab.com:squidit/sq-logger.git"
+    "url": "git+ssh://git@github.com:squidit/sq-logger.git"
   },
   "author": "Squid",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitlab.com/squidit/sq-logger/issues"
+    "url": "https://github.com/squidit/sq-logger/issues"
   },
-  "homepage": "https://gitlab.com/squidit/sq-logger#README",
+  "homepage": "https://github.com/squidit/sq-logger#README",
   "publishConfig": {
     "registry": "http://npm.squidit.com.br/"
   },
