@@ -158,7 +158,7 @@ function wrapError (request, error) {
   const isRegisteredError = some(expectedErrors, expectedError => isEqual(expectedError, toLower(error.constructor.name)))
   const errorToCreate = new Error(get(error, 'message'))
   return isRegisteredError
-    ? boom.badRequest(errorToCreate)
+    ? boom.wrap(errorToCreate, error.statusCode)
     : boom.wrap(errorToCreate, (gt(error.statusCode, 300) ? error.statusCode : 500))
 };
 
