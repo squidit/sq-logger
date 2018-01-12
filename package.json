@@ -30,8 +30,8 @@
     "winston-daily-rotate-file": "^1.4.3"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
-    "mocha": "^3.2.0",
+    "ava": "^0.24.0",
+    "nyc": "^11.4.1",
     "sinon": "^1.17.7",
     "standard": "^8.6.0"
   }
