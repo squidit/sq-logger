@@ -1,1 +1,1 @@
-module.exports = require('app-root-path').require('package.json')
+module.exports = require('app-root-dir').get()

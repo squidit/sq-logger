@@ -1,5 +1,6 @@
 const LogEntries = require('le_node')
-const metadata = require('./utils/findMetadata')
+const rootPath = require('./utils/findMetadata')
+const path = require('path')
 
 /**
  * @typedef {('info'|'debug'|'warning'|'err'|'crit'|'alert'|'notice'|'emerg')} logLevels
@@ -20,19 +21,52 @@ class Logger {
     // Tratamento básico de erro porque se não a classe iria travar a aplicação
     if (!token) throw new Error('Logger should have a token')
     // Pega a variável de ambiente para desenvolvimento que será usada no debug
-    this.isDev = (process.env.NODE_ENV !== 'production') || false
-    this._packageName = metadata.name || 'Unknown package'
-    this._packageVersion = metadata.version || '0.0.0'
+    this._isDev = (process.env.NODE_ENV !== 'production') || false
+    this._mountPackageInfo()
     // Lista de logs disponíveis do Log Entries para não dar erro na função "log"
     this._levels = ['info', 'debug', 'warning', 'err', 'crit', 'alert', 'notice', 'emerg']
     this._logEntries = new LogEntries({token: token})
   }
 
   /**
+   * Monta as informações internas do pacote
+   * @private
+   * @return void
+   */
+  _mountPackageInfo () {
+    try {
+      this._packageName = require(path.join(rootPath, 'package.json')).name || 'Unknown package'
+      this._packageVersion = require(path.join(rootPath, 'package.json')).version || '0.0.0'
+    } catch (error) {
+      console.error('It was not possible to determine your package name, use default or set it manually')
+      this._packageName = 'Unknown package'
+      this._packageVersion = '0.0.0'
+    }
+  }
+
+  /**
+   * Seta o nome do pacote do usuário que será usado no log
+   *
+   * @public
+   * @param {string} name Nome do pacote
+   */
+  set packageName (name) {
+    this._packageName = name
+  }
+
+  /**
+   * Seta a versão do pacote do usuário que será usado no log
+   *
+   * @public
+   * @param {string} version Versão do pacote
+   */
+  set packageVersion (version) {
+    this._packageVersion = version
+  }
+
+  /**
    * Retorna o nome do pacote do usuário que será usado no log
    *
-   * @readonly
-   * @prop packageName
    * @public
    * @return {string} Nome do pacote
    */
@@ -43,8 +77,6 @@ class Logger {
   /**
    * Retorna a versão do pacote do usuário que será usado no log
    *
-   * @readonly
-   * @prop packageVersion
    * @public
    * @return {string} Versão do pacote
    */
@@ -129,7 +161,7 @@ class Logger {
    * @return void
    */
   _logDebug (options) {
-    if (this.isDev) {
+    if (this._isDev) {
       console.log(`[${new Date().toLocaleString()}] - {${options.level}} =>`, options.message)
     }
   }
