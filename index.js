@@ -1,1 +1,1 @@
-module.exports = Object.assign({}, require('./src/Logger'), require('./src/to-be-deleted'))
+module.exports = Object.assign({}, {Logger: require('./src/Logger')}, require('./src/to-be-deleted'))
