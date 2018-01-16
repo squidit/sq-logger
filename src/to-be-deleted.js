@@ -9,7 +9,7 @@ module.exports = {
   },
   sqReplyError: function replyError (request, reply) {
     return (error) => {
-      require('./logger').error(error.message)
+      console.log(error)
       return reply(require('boom').internal()).code(500)
     }
   }
