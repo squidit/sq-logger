@@ -11,6 +11,10 @@
     - [`log.warning(message: any!)`](#logwarningmessage-any)
     - [`log.error(message: any!)`](#logerrormessage-any)
     - [`log.log(level: string!, message: any!)`](#logloglevel-string-message-any)
+    - [`log.packageName[get, set]`](#logpackagenameget-set)
+    - [`log.packageVersion[get, set]`](#logpackageversionget-set)
+  - [Casos especiais](#casos-especiais)
+    - [Nome de aplicação não encontrado](#nome-de-aplicação-não-encontrado)
 
 <!-- /TOC -->
 
@@ -92,4 +96,25 @@ const log = new Logger('<token do LogEntries>')
 
 log.log('notice', 'uma mensagem de notice')
 log.log('crit', {name: 'Objeto crítico', mensagem: 'A mensagem'})
+```
+
+### `log.packageName[get, set]`
+
+Busca ou seta o nome do pacote atual
+
+### `log.packageVersion[get, set]`
+
+Busca ou seta a versão do pacote no formato `0.0.0`
+
+## Casos especiais
+
+### Nome de aplicação não encontrado
+
+Usamos um pacote para buscar o `package.json` e pegar o nome e a versão da sua aplicação, mas as vezes isso pode não funcionar, se este for o caso uma mensagem será exibida no console e você poderá setar manualmente através de:
+
+```js
+const log = new Logger('token')
+
+log.packageName = 'Meu package'
+log.packageVersion = '1.2.3'
 ```
