@@ -34,14 +34,10 @@ class Logger {
    * @return void
    */
   _mountPackageInfo () {
-    try {
-      this._packageName = require(path.join(rootPath, 'package.json')).name || 'Unknown package'
-      this._packageVersion = require(path.join(rootPath, 'package.json')).version || '0.0.0'
-    } catch (error) {
-      console.error('It was not possible to determine your package name, use default or set it manually')
-      this._packageName = 'Unknown package'
-      this._packageVersion = '0.0.0'
-    }
+    /* istanbul ignore next */
+    this._packageName = require(path.join(rootPath, 'package.json')).name || 'Unknown package'
+    /* istanbul ignore next */
+    this._packageVersion = require(path.join(rootPath, 'package.json')).version || '0.0.0'
   }
 
   /**
@@ -118,7 +114,7 @@ class Logger {
    * @param {any!} message Mensagem do log
    */
   log (level, message) {
-    if (!this._levels[level]) throw new Error('Log level not valid, please refer to the "le_node" package documentation')
+    if (!this._levels.includes(level)) throw new Error('Log level not valid, please refer to the "le_node" package documentation')
     return this._logMessage({level: level, message: message})
   }
 
