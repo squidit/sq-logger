@@ -1,6 +1,6 @@
 {
   "name": "sq-logger",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Ferramenta de logs utilizada nas aplicações da Squid",
   "main": "index.js",
   "scripts": {
