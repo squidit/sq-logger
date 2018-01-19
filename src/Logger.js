@@ -144,8 +144,9 @@ class Logger {
    * @return void
    */
   _logMessage (options) {
-    this._logDebug(options)
-    return this._logEntries.log(options.level, this._generateLogMessage(options.message))
+    if (!this._logDebug(options)) {
+      return this._logEntries.log(options.level, this._generateLogMessage(options.message))
+    }
   }
 
   /**
@@ -159,7 +160,9 @@ class Logger {
   _logDebug (options) {
     if (this._isDev) {
       console.log(`[${new Date().toLocaleString()}] - {${options.level}} =>`, options.message)
+      return true
     }
+    return false
   }
 }
 

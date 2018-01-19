@@ -2,7 +2,6 @@ import describe from 'ava'
 import metadata from '../package.json'
 import sinon from 'sinon'
 import Logger from '../src/Logger'
-import findMeta from 'app-root-dir'
 
 describe.beforeEach((test) => {
   test.context.logger = new Logger('ae0ca3af-ce78-4a1b-8e96-6f87a1e153ef')
@@ -12,6 +11,8 @@ describe.beforeEach((test) => {
   }
 })
 
+// ### //
+
 describe('Should NOT allow empty token', (assert) => {
   assert.throws(() => {
     const log = new Logger('')
@@ -19,10 +20,14 @@ describe('Should NOT allow empty token', (assert) => {
   }, Error)
 })
 
+// ### //
+
 describe('Should get correct name and version for package', (assert) => {
   assert.deepEqual(assert.context.logger.packageName, require('../package.json').name)
   assert.deepEqual(assert.context.logger.packageVersion, require('../package.json').version)
 })
+
+// ### //
 
 describe('Should set correct name and version for package', (assert) => {
   assert.context.logger.packageName = 'test-package'
@@ -31,23 +36,33 @@ describe('Should set correct name and version for package', (assert) => {
   assert.deepEqual(assert.context.logger.packageVersion, '1.0.0')
 })
 
+// ### //
+
 describe('Should generate correct package information', (assert) => {
   assert.deepEqual(assert.context.logger._generatePackageInfo(), { app: metadata.name, version: metadata.version })
 })
+
+// ### //
 
 describe('Should set debug to dev when NODE_ENV is not "production"', (assert) => {
   process.env.NODE_ENV = 'dev'
   assert.true(new Logger(assert.context.token)._isDev)
 })
 
+// ### //
+
 describe('Should set debug to production when NODE_ENV is "production"', (assert) => {
   process.env.NODE_ENV = 'production'
   assert.false(new Logger(assert.context.token)._isDev)
 })
 
+// ### //
+
 describe('Should generate correct log message', (assert) => {
   assert.deepEqual(assert.context.logger._generateLogMessage('test message'), { app: metadata.name, version: metadata.version, message: 'test message' })
 })
+
+// ### //
 
 describe('Should log to console when NODE_ENV is different from "production"', (assert) => {
   process.env.NODE_ENV = 'dev'
@@ -66,6 +81,8 @@ describe('Should log to console when NODE_ENV is different from "production"', (
   process.stdout.write = oldConsole // Volta o console para o que era antes
 })
 
+// ### //
+
 describe('Should NOT log to console when NODE_ENV is "production"', (assert) => {
   process.env.NODE_ENV = 'production'
   const oldConsole = process.stdout.write // Salva o console antigo
@@ -83,6 +100,8 @@ describe('Should NOT log to console when NODE_ENV is "production"', (assert) => 
   process.stdout.write = oldConsole // Volta o console para o que era antes
 })
 
+// ### //
+
 describe('Should log info message to logEntries using internal method', (assert) => {
   assert.context.logger._logEntries = assert.context.logEntriesMock
   const testObj = { level: 'info', message: 'test message' }
@@ -93,6 +112,20 @@ describe('Should log info message to logEntries using internal method', (assert)
   assert.true(assert.context.logEntriesMock.log.calledWith(testObj.level, assert.context.logger._generateLogMessage(testObj.message)))
 })
 
+// ### //
+
+describe('Should NOT log info message to logEntries using internal method when env is development', (assert) => {
+  assert.context.logger._isDev = true
+  assert.context.logger._logEntries = assert.context.logEntriesMock
+  const testObj = { level: 'info', message: 'test message' }
+
+  assert.context.logger._logMessage(testObj)
+
+  assert.false(assert.context.logEntriesMock.log.called)
+})
+
+// ### //
+
 describe('Should log info message to logEntries using exposed method', (assert) => {
   assert.context.logger._logMessage = sinon.spy()
   const testMessage = 'test message'
@@ -101,6 +134,8 @@ describe('Should log info message to logEntries using exposed method', (assert) 
   assert.true(assert.context.logger._logMessage.called)
   assert.true(assert.context.logger._logMessage.calledWith({ level: 'info', message: testMessage }))
 })
+
+// ### //
 
 describe('Should log error message to logEntries using exposed method', (assert) => {
   assert.context.logger._logMessage = sinon.spy()
@@ -111,6 +146,8 @@ describe('Should log error message to logEntries using exposed method', (assert)
   assert.true(assert.context.logger._logMessage.calledWith({ level: 'err', message: testMessage }))
 })
 
+// ### //
+
 describe('Should log warning message to logEntries using exposed method', (assert) => {
   assert.context.logger._logMessage = sinon.spy()
   const testMessage = 'test message'
@@ -120,6 +157,8 @@ describe('Should log warning message to logEntries using exposed method', (asser
   assert.true(assert.context.logger._logMessage.calledWith({ level: 'warning', message: testMessage }))
 })
 
+// ### //
+
 describe('Should log message with custom level to logEntries using exposed method', (assert) => {
   assert.context.logger._logMessage = sinon.spy()
 
@@ -127,6 +166,8 @@ describe('Should log message with custom level to logEntries using exposed metho
   assert.true(assert.context.logger._logMessage.called)
   assert.true(assert.context.logger._logMessage.calledWith({ level: 'crit', message: 'test message' }))
 })
+
+// ### //
 
 describe('Should NOT log message with custom level to logEntries using exposed method when level does not exist on list', (assert) => {
   assert.context.logger._logMessage = sinon.spy()
