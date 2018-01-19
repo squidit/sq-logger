@@ -1,85 +1,120 @@
-## sq-logger
-> Wrap de logger da Squid
+# SQ-Logger
 
-## Usando
-Ao realizar o require ou obtendo o `logger` interno, é retornado a instância do logger ([winston](https://github.com/winstonjs/winston)) para relização de logs, podendo-se utilizar os métodos do mesmo.
+> Wrap do LogEntries para utilização em APIs Squid
 
-```js
-const logger = require('sq-logger')
-logger.log('info', 'meu log marotão')
-```
+<!-- TOC -->
 
-## Transports
-Os [Transports](https://github.com/winstonjs/winston/blob/master/docs/transports.md) são configurados conforme o ambiente atual, verificando através do `NODE_ENV`.
+- [SQ-Logger](#sq-logger)
+  - [Instalação](#instalação)
+  - [Uso](#uso)
+    - [`log.info(message: any!)`](#loginfomessage-any)
+    - [`log.warning(message: any!)`](#logwarningmessage-any)
+    - [`log.error(message: any!)`](#logerrormessage-any)
+    - [`log.log(level: string!, message: any!)`](#logloglevel-string-message-any)
+    - [`log.packageName[get, set]`](#logpackagenameget-set)
+    - [`log.packageVersion[get, set]`](#logpackageversionget-set)
+  - [Casos especiais](#casos-especiais)
+    - [Nome de aplicação não encontrado](#nome-de-aplicação-não-encontrado)
 
-### Produção
-Configurado para salvar no [LogEntries](logentries.com/app/) todos os erros e informações.
+<!-- /TOC -->
 
-**Importante**: Configurar variável de ambiente com a chave do logentries no env: `LOGGER_TOKEN`.
+## Instalação
 
-### Stage
-Ambiente de homologação, configurado para salvar em arquivos separados por diretórios diários com os seguintes arquivos:
+> Em definição se vamos publicar no NPM ou não
 
-- `all-logs.log`: contendo os logs esperados
-- `exceptions.log`: contendo todos os logs de erros inesperados
+## Uso
 
-### Development
-Ambiente de desenvolimento local, configurado para salvar em arquivos na raiz do projeto com os seguintes arquivos:
-
-- `all-logs.log`: contendo os logs esperados
-- `exceptions.log`: contendo todos os logs de erros inesperados
-
-# API
-
-## Register
-`logger.register([ErrorClasses])`
-`logger.getExpectedErrors() => ['classnames']`
-
-Realiza o registro das classes esperadas de erros. Todos os erros que estiverem no registro serão lançados como *Bad request*, e os demais serão *Internal server error*.
-
-## Reply
-`logger.reply(request, reply, statusCode = 200)(data)`
-
-Utilizado para realizar o reply do Hapi e adicionar um log do tipo *info*.
-
-Ex:
+Após a instalação use `require` para trazer o pacote:
 
 ```js
-const { sqReply } = require('sq-logger')
-
-function myHandler (request, reply) {
-  doSomething(request.param.id)
-    .then(sqReply(request, reply))
-}
+const Logger = require('sq-logger').Logger
 ```
 
-## ReplyError
-`logger.replyError(request, reply)(error)`
+> Estamos utilizando `.Logger` porque temos outros dois métodos mais antigos que serão removidos depois (`sqReply` e `sqReplyError`)
 
-Realiza o reply do erro que ocorreu como erro do Boom.
-
-Caso o erro esteja na lista de erros registrados, é retornado um *bad request*, caso contrário, sempre é retornado um 500 e é omitido o erro para o usuário final.
-
-Erros personalizados devem lançar seus erros no Boom conforme a [listagem oficial](https://github.com/hapijs/boom#http-4xx-errors).
+Crie uma nova instancia da classe:
 
 ```js
-const { sqReplyError } = require('sq-logger')
-
-function myHandler (request, reply) {
-  doSomething(request.param.id)
-    .catch(sqReplyError(request, reply))
-}
+const Logger = require('sq-logger').Logger
+const log = new Logger('<token do LogEntries>')
 ```
 
-## Configuração
-Por padrão o level de log é *error*, caso queira alterar, exporte no ambiente a variável `LOGGER_LEVEL` com o valor desejado.
+Isto vai liberar 4 métodos principais e duas propriedades.
 
-Valores possíveis:
-- error
-- warn
+### `log.info(message: any!)`
+
+Loga uma mensagem com o nível de informação.
+
+```js
+const Logger = require('sq-logger').Logger
+const log = new Logger('<token do LogEntries>')
+
+log.info('uma mensagem')
+log.info({name: 'Objeto', mensagem: 'A mensagem'})
+```
+
+### `log.warning(message: any!)`
+
+Loga uma mensagem com o nível de aviso.
+
+```js
+const Logger = require('sq-logger').Logger
+const log = new Logger('<token do LogEntries>')
+
+log.warning('uma mensagem')
+log.warning({name: 'Objeto', mensagem: 'A mensagem'})
+```
+
+### `log.error(message: any!)`
+
+Loga uma mensagem com o nível de erro.
+
+```js
+const Logger = require('sq-logger').Logger
+const log = new Logger('<token do LogEntries>')
+
+log.error('uma mensagem')
+log.error({name: 'Objeto', mensagem: 'A mensagem'})
+```
+
+### `log.log(level: string!, message: any!)`
+
+Quando nenhum dos níveis acima for suficiente, expomos um método para utilização de qualquer outro nível que esteja documentado no pacote do Log Entries:
+
 - info
-- verbose
 - debug
-- silly
+- warning
+- err
+- crit
+- alert
+- notice
+- emerg
 
-Para que os logs sejam transportados para o LogEntries em produção é necessário ter exportado no ambiente o valor para `LOGGER_TOKEN`. Caso esteja em produção mas não tenha o valor para o token, os transportes de stage são configurados.
+```js
+const Logger = require('sq-logger').Logger
+const log = new Logger('<token do LogEntries>')
+
+log.log('notice', 'uma mensagem de notice')
+log.log('crit', {name: 'Objeto crítico', mensagem: 'A mensagem'})
+```
+
+### `log.packageName[get, set]`
+
+Busca ou seta o nome do pacote atual
+
+### `log.packageVersion[get, set]`
+
+Busca ou seta a versão do pacote no formato `0.0.0`
+
+## Casos especiais
+
+### Nome de aplicação não encontrado
+
+Usamos um pacote para buscar o `package.json` e pegar o nome e a versão da sua aplicação, mas as vezes isso pode não funcionar, se este for o caso uma mensagem será exibida no console e você poderá setar manualmente através de:
+
+```js
+const log = new Logger('token')
+
+log.packageName = 'Meu package'
+log.packageVersion = '1.2.3'
+```
