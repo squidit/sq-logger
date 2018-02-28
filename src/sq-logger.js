@@ -242,8 +242,6 @@ module.exports = winston
 module.exports.createErrorLogObj = createErrorLogObj
 module.exports.createInfoLogObj = createInfoLogObj
 module.exports.getExpectedErrors = () => { return expectedErrors }
-module.exports.handleError = replyError
-module.exports.defaultErrorHandler = replyError
 module.exports.logError = logError
 module.exports.logInfo = logInfo
 module.exports.logStepError = logStepError
