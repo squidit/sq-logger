@@ -27,41 +27,18 @@ function addProductionTransport () {
     console.info('LOGGER_TOKEN not informed and is production environment, loggin in daily file.')
     addStageTransport()
   } else {
-    require('le_node')
-    winston.remove(winston.transports.Console)
-    winston.add(winston.transports.Logentries, {
-      token,
-      level: getLoggerLevel()
-    })
-    winston.handleExceptions(winston.transports.Logentries)
+    removeConsoleTransport()
+    addLogEntriesTransport(token, getLoggerLevel())
   }
 }
 
 function addDevelopmentTransport () {
-  winston.remove(winston.transports.Console)
-  winston.add(winston.transports.File, {
-    filename: path.join(process.cwd(), 'all-logs.log'),
-    level: getLoggerLevel()
-  })
-  winston.handleExceptions(winston.transports.File, {
-    filename: path.join(process.cwd(), 'exceptions.log')
-  })
+  removeConsoleTransport()
+  addLogFileTransport()
 }
 
 function addStageTransport () {
-  require('winston-daily-rotate-file')
-  winston.add(winston.transports.DailyRotateFile, {
-    filename: path.join(process.cwd(), 'all-logs.log'),
-    datePattern: 'yyyy-MM-dd.',
-    prepend: true,
-    level: getLoggerLevel()
-  })
-  winston.handleExceptions(winston.transports.DailyRotateFile, {
-    filename: path.join(process.cwd(), 'exceptions.log'),
-    datePattern: 'yyyy-MM-dd.',
-    prepend: true,
-    level: getLoggerLevel()
-  })
+  addDailyLogFileTransport()
 }
 
 function addTestTransport () {
@@ -70,6 +47,62 @@ function addTestTransport () {
 
 function dummyAdd () {
   return
+}
+
+function addConsoleTransport() {
+  winston.add(winston.transports.Console)
+}
+
+function removeConsoleTransport() {
+  winston.remove(winston.transports.Console)
+}
+
+function addLogEntriesTransport(token, loggerLevel) {
+  require('le_node')
+  winston.add(winston.transports.Logentries, {
+    token,
+    level: loggerLevel
+  })
+}
+
+function removeLogEntriesTransport() {
+  winston.remove(winston.transports.Logentries)
+}
+
+function addDailyLogFileTransport() {
+  require('winston-daily-rotate-file')
+  winston.add(winston.transports.DailyRotateFile, {
+    filename: path.join(process.cwd(), 'all-logs.log'),
+    datePattern: 'yyyy-MM-dd.',
+    prepend: true,
+    level: getLoggerLevel()
+  })
+
+  winston.handleExceptions(winston.transports.DailyRotateFile, {
+    filename: path.join(process.cwd(), 'exceptions.log'),
+    datePattern: 'yyyy-MM-dd.',
+    prepend: true,
+    level: getLoggerLevel()
+  })
+}
+
+function removeDailyLogFileTransport() {
+  winston.add(winston.transports.DailyRotateFile)
+}
+
+function addLogFileTransport() {
+  winston.add(winston.transports.File, {
+    filename: path.join(process.cwd(), 'all-logs.log'),
+    level: getLoggerLevel()
+  })
+
+  winston.handleExceptions(winston.transports.File, {
+    filename: path.join(process.cwd(), 'exceptions.log')
+  })
+}
+
+function removeLogFileTransport() {
+  winston.remove(winston.transports.File)
 }
 
 (() => {
@@ -150,7 +183,12 @@ function createInfoLogObj (request, statusCode) {
     request_id: get(request, 'id'),
     status_code: statusCode,
     uid: get(request, 'headers.x-sq-uid', get(request, 'id')),
-    user_agent: get(request, 'headers.user-agent')
+    user_agent: get(request, 'headers.user-agent'),
+
+    requestid: get(request, 'squid.requestid'),
+    request_begin: get(request, 'squid.requestBegin'),
+    request_end: get(request, 'squid.requestEnd'),
+    request_duration: get(request, 'squid.requestDuration')
   }
 }
 
@@ -158,7 +196,7 @@ function wrapError (request, error) {
   const isRegisteredError = some(expectedErrors, expectedError => isEqual(expectedError, toLower(error.constructor.name)))
   const errorToCreate = new Error(get(error, 'message'))
   return isRegisteredError
-    ? boom.wrap(errorToCreate, error.statusCode)
+    ? boom.badRequest(errorToCreate)
     : boom.wrap(errorToCreate, (gt(error.statusCode, 300) ? error.statusCode : 500))
 };
 
@@ -169,22 +207,10 @@ function logError (request, error) {
   return wrappedError
 }
 
-function replyError (request, reply) {
-  return (error) => reply(logError(request, error))
-}
-
 function logInfo (request, data, statusCode) {
   const logObj = createInfoLogObj(request, statusCode)
   winston.info(JSON.stringify(logObj))
   return data
-}
-
-function replyInfo (request, reply, statusCode = 200) {
-  return (data) => reply(logInfo(request, data, statusCode)).code(statusCode)
-}
-
-function replyEmpty (request, reply, statusCode = 200) {
-  return () => reply(logInfo(request, null, statusCode)).code(statusCode)
 }
 
 function logStepError (step, err, data) {
@@ -224,10 +250,13 @@ module.exports.logStepError = logStepError
 module.exports.logStepInfo = logStepInfo
 module.exports.logger = winston
 module.exports.register = register
-module.exports.replyError = replyError
-module.exports.reply = replyInfo
-module.exports.replyEmpty = replyEmpty
-module.exports.sqReplyEmpty = replyEmpty
-module.exports.sqReply = replyInfo
-module.exports.sqReplyError = replyError
 module.exports.wrapBoomError = wrapError
+
+module.exports.addConsoleTransport = addConsoleTransport
+module.exports.removeConsoleTransport = removeConsoleTransport
+module.exports.addLogEntriesTransport = addLogEntriesTransport
+module.exports.removeLogEntriesTransport = removeLogEntriesTransport
+module.exports.addDailyLogFileTransport = addDailyLogFileTransport
+module.exports.removeDailyLogFileTransport = removeDailyLogFileTransport
+module.exports.addLogFileTransport = addLogFileTransport
+module.exports.removeLogFileTransport = removeLogFileTransport
