@@ -33,16 +33,8 @@ function addProductionTransport () {
 }
 
 function addDevelopmentTransport () {
-  removeConsoleTransport()
+  addConsoleTransport()
   addLogFileTransport()
-}
-
-function addStageTransport () {
-  addDailyLogFileTransport()
-}
-
-function addTestTransport () {
-  winston.remove(winston.transports.Console)
 }
 
 function dummyAdd () {
@@ -111,11 +103,11 @@ function removeLogFileTransport() {
     isEqual(env, 'local') ||
     isEqual(env, 'develop') ||
     isEqual(env, 'develop') ||
-    isEqual(env, 'development')
+    isEqual(env, 'development') ||
+    isEqual(env, 'stage') ||
+    isEqual(env, 'test')
       ? addDevelopmentTransport()
       : dummyAdd()
-    isEqual(env, 'stage') ? addStageTransport() : dummyAdd()
-    isEqual(env, 'test') ? addTestTransport() : dummyAdd()
 
     return winston
   } catch (error) {
